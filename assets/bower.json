@@ -1,0 +1,30 @@
+{
+  "name": "smsblast-frontend",
+  "version": "1.0.0",
+  "homepage": "https://github.com/richdunajewski/smsblast-frontend",
+  "authors": [
+    "Rich Dunajewski <me@richdunajewski.com>"
+  ],
+  "description": "Frontend for smsblast script.",
+  "main": "index.html",
+  "moduleType": [],
+  "keywords": [
+    "frontend",
+    "gui",
+    "sms",
+    "smsblast"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bootstrap": "~3.3.5",
+    "font-awesome": "~4.4.0"
+  }
+}
