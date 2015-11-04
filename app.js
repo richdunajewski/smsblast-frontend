@@ -2,6 +2,11 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 
+var options = {
+    timeout: 15000,
+    credentialsFile: 'gv_credentials.json'
+};
+
 app.set('view engine', 'ejs');
 
 app.use(express.static('assets'));
@@ -30,27 +35,58 @@ var server = app.listen(7000, function () {
     var port = server.address().port;
 
     console.log('smsblast app listening at http://%s:%s', host, port);
-
-    sendSMS('9084586568', 'message to send', function (err) {
-        if (err) console.error(err);
-        else console.log('sent!');
-    });
 });
 
 function sendSMS(to, message, cb) {
-    require('child_process').exec('./smsblast -t ' + to + ' -m ' + message,
-        function (error, stdout, stderr) {
-            console.log('stdout: ' + stdout);
-            console.log('stderr: ' + stderr);
-            if (error !== null) {
-                console.log('exec error: ' + error);
-                return cb(error);
+    var Filesystem = require('machinepack-fs');
+
+    Filesystem.readJson({
+        source: options.credentialsFile,
+        schema: '*'
+    }).exec({
+        error: function (err) {
+            return cb(err);
+        },
+        doesNotExist: function () {
+            return cb('Credentials file ' + options.credentialsFile + ' does not exist');
+        },
+        couldNotParse: function () {
+            return cb('Unable to parse credentials file ' + options.credentialsFile);
+        },
+        success: function (data) {
+            var responseSent = false;
+
+            var command = '';
+            var platform = require('os').platform();
+            switch (platform) {
+                case 'win32':
+                    command = 'python C:\\Python27\\Scripts\\gvoice -e ' + data.GVACCT + ' -p ' + data.GVPASS + ' send_sms ' + to + ' "' + message + '"';
+                    break;
+                case 'linux':
+                case 'darwin':
+                    command = 'gvoice -e ' + data.GVACCT + ' -p ' + data.GVPASS + ' send_sms ' + to + ' "' + message + '"';
+                    break;
+                default:
+                    return cb('ERROR: Unknown OS type: ' + platform);
+                    break;
             }
-            return cb();
-        });
 
-    setTimeout(function () {
-        return cb('Timeout');
-    }, 5000);
+            require('child_process').exec(command,
+                function (error, stdout, stderr) {
+                    console.log(stdout);
+                    console.log(stderr);
+                    if (error !== null) {
+                        console.log('exec error: ' + error);
+                        responseSent = true;
+                        return cb(error);
+                    }
+                    responseSent = true;
+                    return cb();
+                });
 
+            setTimeout(function () {
+                if (!responseSent) return cb('Command timeout');
+            }, options.timeout);
+        }
+    });
 }
