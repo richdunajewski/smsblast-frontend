@@ -7,7 +7,7 @@
 
 - Node.js 0.10.x and up with NPM
 - Bower package manager (`npm install -g bower`)
-
+- pygooglevoice (several versions out there, we use https://code.google.com/r/kkleidal-pygooglevoiceupdate/)
 
 ## Installation
 
