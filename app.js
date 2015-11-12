@@ -3,6 +3,7 @@ var app = express();
 var bodyParser = require('body-parser');
 
 var options = {
+    port: 7000,
     timeout: 15000,
     credentialsFile: 'gv_credentials.json'
 };
@@ -30,7 +31,7 @@ app.post('/send/sms', function (req, res) {
 });
 
 
-var server = app.listen(7000, function () {
+var server = app.listen(options.port || 7000, function () {
     var host = server.address().address;
     var port = server.address().port;
 
